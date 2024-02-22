@@ -1,5 +1,6 @@
 #include "decimal.h"
 #include <iostream>
+#include <string>
 
 Decimal::Decimal(std::string str){
     Decimal num = Decimal::StrToDec(str);
@@ -540,10 +541,8 @@ Decimal& ShiftLeft(Decimal &rhs, int num){
             rhs.ord[i] = 0;
         }
     }
-    int len_zero = 0;
-    while(rhs.ord[len_zero] == 0){
+    while(rhs.ord.size() > 1 && *rhs.ord.begin() == 0) {
         rhs.ord.erase(rhs.ord.begin());
-        len_zero++;
     }
     if (rhs.ord.size() == 0){
         rhs.ord.push_back(0);
@@ -584,9 +583,8 @@ Decimal& ShiftRight(Decimal &rhs, int num){
         }
     }
     int len_zero = 0;
-    while(rhs.ord[len_zero] == 0){
+    while(rhs.ord.size() > 1 && *rhs.ord.begin() == 0) {
         rhs.ord.erase(rhs.ord.begin());
-        len_zero++;
     }
     if (rhs.ord.size() == 0){
         rhs.ord.push_back(0);
@@ -722,7 +720,6 @@ Decimal& Decimal::operator/=(const Decimal& rhs){
         n.ord.insert(n.ord.begin(), 0);
         for (int i = 9; i >= 0; i--){
             n.ord[0] = i;
-            std::cout << second * n;
             if ((second * n) <= *this){
                 break;
             }
@@ -750,10 +747,10 @@ bool operator==(const Decimal& lhs, const Decimal& rhs){
         int len_mant_rhs = rhs.mant.size();
         int len_ord = lhs.ord.size();
         int f = 0;
-        while (lhs.mant[len_mant - 1] == 0){
+        while (len_mant > 0 && lhs.mant[len_mant - 1] == 0){
             len_mant--;
         }
-        while (rhs.mant[len_mant_rhs - 1] == 0){
+        while (len_mant_rhs > 0 && rhs.mant[len_mant_rhs - 1] == 0){
             len_mant_rhs--;
         }
         if (len_mant != len_mant_rhs){
@@ -955,7 +952,7 @@ Decimal FunctionPi(int precision){
     Decimal dividerx = Decimal("1");
     Decimal sixteen = Decimal ("16");
     for (int i = 0; i < precision; i++){
-        Decimal idiv = Decimal (i + "0");
+        Decimal idiv = Decimal(std::to_string(i));
         idiv *=divider;
         dividerx *= sixteen;
         pi += (((four / (idiv + first)) - (second / (idiv + four)) - (first / (idiv + five)) - (first / idiv+ six))/ dividerx);
