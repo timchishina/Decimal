@@ -21,11 +21,11 @@ int main(){
     std::cout <<"t + e : "<< t << " + "<< e <<" = "<< (t + e) <<'\n';
     std::cout <<"t - e : "<< t << " - "<< e <<" = "<< (t - e) <<'\n';
     std::cout << "si * su: " << si<< " * " << su << " = "<< si*su<< "\n";
-    std::cout << "\n"<<"Введите число знаков после запятой числа Пи: ";
-    int n = 0;
-    std::cin >> n ;
-    Decimal g = Decimal();
-    g = FunctionPi(n);
-    std::cout << g;
+    // std::cout << "\n"<<"Введите число знаков после запятой числа Пи: ";
+    // int n = 0;
+    // std::cin >> n ;
+    // Decimal g = Decimal();
+    // g = FunctionPi(n);
+    // std::cout << g;
     return 0;
 }
