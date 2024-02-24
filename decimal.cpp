@@ -1,6 +1,8 @@
 #include "decimal.h"
 #include <iostream>
 #include <string>
+#include <vector>
+#include <algorithm>
 
 Decimal::Decimal(std::string str){
     Decimal num = Decimal::StrToDec(str);
@@ -9,10 +11,10 @@ Decimal::Decimal(std::string str){
     this->sign = num.sign;
 }
 
-Decimal:: ~Decimal(){
-    this->mant.clear();
-    this->ord.clear();
-}
+// Decimal:: ~Decimal(){
+//     this->mant.clear();
+//     this->ord.clear();
+// }
 
 Decimal Decimal::StrToDec(const std::string &num) {
     int i = 0;
@@ -69,34 +71,34 @@ std::string Decimal::DecToStr(const Decimal &num){
     return number;
 }
 
-Decimal& Decimal::operator=(const Decimal &rhs) {
-    mant = rhs.mant;
-    ord = rhs.ord;
-    sign = rhs.sign;
-    return *this;
-}
+// Decimal& Decimal::operator=(const Decimal &rhs) {
+//     mant = rhs.mant;
+//     ord = rhs.ord;
+//     sign = rhs.sign;
+//     return *this;
+// }
 
 Decimal operator+(const Decimal& lhs, const Decimal& rhs){
-    Decimal SumDec(lhs);
+    Decimal SumDec = lhs;
     SumDec += rhs;
     return SumDec;
 } 
 
 Decimal operator-(const Decimal& lhs, const Decimal& rhs){
-    Decimal DiffDec(lhs);
-    Decimal Num(rhs);
+    Decimal DiffDec = lhs;
+    Decimal Num = rhs;
     DiffDec -= Num;
     return DiffDec;
 }
 
 Decimal operator*(const Decimal&lhs, const Decimal& rhs){
-    Decimal MultDec(lhs);
+    Decimal MultDec = lhs;
     MultDec *= rhs;
     return MultDec;
 }
 
 Decimal operator/(const Decimal&lhs, const Decimal& rhs){
-    Decimal DivDec(lhs);
+    Decimal DivDec = lhs;
     DivDec /= rhs;
     return DivDec;
 }
@@ -189,7 +191,7 @@ Decimal& Decimal::operator+=(const Decimal &rhs){
 Decimal& Decimal::operator-=(const Decimal &rhs){
     if ((this->sign == 0) and (rhs.sign == 1)){
         Decimal second = rhs;
-        return * this += (~second);
+        return *this += (~second);
     }
     if ((this->sign == 1) and (rhs.sign == 0)){
         Decimal second = rhs;
@@ -206,32 +208,20 @@ Decimal& Decimal::operator-=(const Decimal &rhs){
                 int len = len_mant_rhs - len_mant_this;
                 for (int i = 0; i < len; i++){
                     this->mant.push_back(0);
+                    len_mant_this++;
                 }
             }
-            if (len_mant_this <= len_mant_rhs){
-                for (int i = len_mant_this - 1; i >= 0 ; i--){
-                    this->mant[i] = this->mant[i] - rhs.mant[i] - overflow;
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
+            for (int i = len_mant_rhs - 1; i >= 0 ; i--){
+                this->mant[i] = this->mant[i] - rhs.mant[i] - overflow;
+                if (this->mant[i] < 0){
+                    this->mant[i] = 10 + this->mant[i];
+                    overflow = 1;
+                }
+                else{
+                    overflow = 0;
                 }
             }
-            else{
-                for (int i = len_mant_rhs - 1; i >= 0 ; i--){
-                    this->mant[i] = this->mant[i] - rhs.mant[i] - overflow;
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
-                }
-            }
+            
             for (int i = 1; i <= len_ord_rhs; i++){                    
                 this->ord[len_ord_this - i] = this->ord[len_ord_this - i] - rhs.ord[len_ord_rhs - i] - overflow;
                 if (this->ord[len_ord_this - i] < 0){
@@ -255,53 +245,38 @@ Decimal& Decimal::operator-=(const Decimal &rhs){
                 }
             }
             int len_zero = 0;
-            while(this->ord[len_zero] == 0){
+            while((len_ord_this > 1) and (this->ord[len_zero] == 0)){
                 this->ord.erase(this->ord.begin());
-                len_zero++;
-            }
-            if (this->ord.size() == 0){
-                this->ord.push_back(0);
+                len_ord_this--;
             }
             return *this;
         }
         else {
-            this->sign = 1;
+            Decimal tmp = *this;
+            *this = rhs;
+            len_mant_rhs = tmp.mant.size();
+            len_mant_this = rhs.mant.size();
+            len_ord_rhs = tmp.ord.size();
+            len_ord_this = rhs.ord.size();
             if (len_mant_this < len_mant_rhs){
-                for (int i = len_mant_this; i < len_mant_rhs; i++){
-                    this->mant.push_back(rhs.mant[i]);
+                int len = len_mant_rhs - len_mant_this;
+                for (int i = 0; i < len; i++){
+                    this->mant.push_back(0);
+                    len_mant_this++;
                 }
             }
-            if (len_mant_this <= len_mant_rhs){
-                for (int i = len_mant_this - 1; i >= 0 ; i--){
-                    this->mant[i] = rhs.mant[i] - this->mant[i] - overflow;
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
+            for (int i = len_mant_rhs - 1; i >= 0 ; i--){
+                this->mant[i] = this->mant[i] - tmp.mant[i] - overflow;
+                if (this->mant[i] < 0){
+                    this->mant[i] = 10 + this->mant[i];
+                    overflow = 1;
+                }
+                else{
+                    overflow = 0;
                 }
             }
-            else{
-                for (int i = len_mant_this - 1; i >= 0 ; i--){
-                    if (len_mant_rhs <= i){
-                        this->mant[i] = 0 - this->mant[i] - overflow;
-                    }
-                    else{
-                        this->mant[i] = rhs.mant[i] - this->mant[i] - overflow;
-                    }
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
-                }
-            }
-            for (int i = 1; i <= len_ord_this; i++){                    
-                this->ord[len_ord_this - i] =  rhs.ord[len_ord_rhs - i] - this->ord[len_ord_this - i] - overflow;
+            for (int i = 1; i <= len_ord_rhs; i++){                    
+                this->ord[len_ord_this - i] = this->ord[len_ord_this - i] - tmp.ord[len_ord_rhs - i] - overflow;
                 if (this->ord[len_ord_this - i] < 0){
                     this->ord[len_ord_this - i] = 10 + this->ord[len_ord_this - i];
                     overflow = 1;
@@ -311,79 +286,53 @@ Decimal& Decimal::operator-=(const Decimal &rhs){
                 }
             }
             if (overflow > 0){
-                if (len_ord_rhs > len_ord_this){
-                    for (int i = len_ord_this + 1; i <= len_ord_rhs; i++){
-                        this->ord.insert(this->ord.begin(), 0);
-                        this->ord[0] =  rhs.ord[len_ord_rhs - i] - overflow;
-                        if (this->ord[0] < 0){
-                            this->ord[0] = 10 + this->ord[0];
-                            overflow = 1;
-                        } else{
-                            overflow = 0;
-                            break;
-                        }
+                for (int i = len_ord_rhs + 1; i <= len_ord_this; i++){
+                    this->ord[len_ord_this - i] = this->ord[len_ord_this - i] - overflow;
+                    if (this->ord[len_ord_this - i] < 0){
+                        this->ord[len_ord_this - i] = 10 + this->ord[len_ord_this - i];
+                        overflow = 1;
+                    } else{
+                        overflow = 0;
+                        break;
                     }
-                }
-                else{
-                    this->ord.insert(this->ord.begin(), overflow);
-                }
-            }
-            if (len_ord_rhs > len_ord_this){
-                int len = len_ord_rhs - len_ord_this - 2;
-                for (int i = len; i>=0; i--){
-                    this->ord.insert(this->ord.begin(), rhs.ord[i]);
                 }
             }
             int len_zero = 0;
-            while(this->ord[len_zero] == 0){
+            while((len_ord_this > 1) and (this->ord[len_zero] == 0)){
                 this->ord.erase(this->ord.begin());
-                len_zero++;
+                len_ord_this--;
             }
-            if (this->ord.size() == 0){
-                this->ord.push_back(0);
-            }
+            this->sign = 1;
             return *this;
         }
     }
     else{
         if(*this > rhs){
-            this->sign = 0;
+            Decimal tmp = *this;
+            *this = rhs;
+            len_mant_rhs = tmp.mant.size();
+            len_mant_this = rhs.mant.size();
+            len_ord_rhs = tmp.ord.size();
+            len_ord_this = rhs.ord.size();
             if (len_mant_this < len_mant_rhs){
-                for (int i = len_mant_this; i < len_mant_rhs; i++){
-                    this->mant.push_back(rhs.mant[i]);
+                int len = len_mant_rhs - len_mant_this;
+                for (int i = 0; i < len; i++){
+                    this->mant.push_back(0);
+                    len_mant_this++;
                 }
             }
-            if (len_mant_this <= len_mant_rhs){
-                for (int i = len_mant_this - 1; i >= 0 ; i--){
-                    this->mant[i] = rhs.mant[i] - this->mant[i] - overflow;
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
+            for (int i = len_mant_rhs - 1; i >= 0 ; i--){
+                this->mant[i] = this->mant[i] - tmp.mant[i] - overflow;
+                if (this->mant[i] < 0){
+                    this->mant[i] = 10 + this->mant[i];
+                    overflow = 1;
+                }
+                else{
+                    overflow = 0;
                 }
             }
-            else{
-                for (int i = len_mant_this - 1; i >= 0 ; i--){
-                    if (len_mant_rhs <= i){
-                        this->mant[i] = 0 - this->mant[i] - overflow;
-                    }
-                    else{
-                        this->mant[i] = rhs.mant[i] - this->mant[i] - overflow;
-                    }
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
-                }
-            }
-            for (int i = 1; i <= len_ord_this; i++){                    
-                this->ord[len_ord_this - i] =  rhs.ord[len_ord_rhs - i] - this->ord[len_ord_this - i] - overflow;
+            for (int i = 1; i <= len_ord_rhs; i++){                    
+                this->ord[len_ord_this - i] = this->ord[len_ord_this - i] - tmp.ord[len_ord_rhs - i] - overflow;
                 if (this->ord[len_ord_this - i] < 0){
                     this->ord[len_ord_this - i] = 10 + this->ord[len_ord_this - i];
                     overflow = 1;
@@ -393,37 +342,23 @@ Decimal& Decimal::operator-=(const Decimal &rhs){
                 }
             }
             if (overflow > 0){
-                if (len_ord_rhs > len_ord_this){
-                    for (int i = len_ord_this + 1; i <= len_ord_rhs; i++){
-                        this->ord.insert(this->ord.begin(), 0);
-                        this->ord[0] =  rhs.ord[len_ord_rhs - i] - overflow;
-                        if (this->ord[0] < 0){
-                            this->ord[0] = 10 + this->ord[0];
-                            overflow = 1;
-                        } else{
-                            overflow = 0;
-                            break;
-                        }
+                for (int i = len_ord_rhs + 1; i <= len_ord_this; i++){
+                    this->ord[len_ord_this - i] = this->ord[len_ord_this - i] - overflow;
+                    if (this->ord[len_ord_this - i] < 0){
+                        this->ord[len_ord_this - i] = 10 + this->ord[len_ord_this - i];
+                        overflow = 1;
+                    } else{
+                        overflow = 0;
+                        break;
                     }
-                }
-                else{
-                    this->ord.insert(this->ord.begin(), overflow);
-                }
-            }
-            if (len_ord_rhs > len_ord_this){
-                int len = len_ord_rhs - len_ord_this - 2;
-                for (int i = len; i>=0; i--){
-                    this->ord.insert(this->ord.begin(), rhs.ord[i]);
                 }
             }
             int len_zero = 0;
-            while(this->ord[len_zero] == 0){
+            while((len_ord_this > 1) and (this->ord[len_zero] == 0)){
                 this->ord.erase(this->ord.begin());
-                len_zero++;
+                len_ord_this--;
             }
-            if (this->ord.size() == 0){
-                this->ord.push_back(0);
-            }
+            this->sign = 0;
             return *this;
         }
         else{
@@ -431,32 +366,20 @@ Decimal& Decimal::operator-=(const Decimal &rhs){
                 int len = len_mant_rhs - len_mant_this;
                 for (int i = 0; i < len; i++){
                     this->mant.push_back(0);
+                    len_mant_this++;
                 }
             }
-            if (len_mant_this <= len_mant_rhs){
-                for (int i = len_mant_this - 1; i >= 0 ; i--){
-                    this->mant[i] = this->mant[i] - rhs.mant[i] - overflow;
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
+            for (int i = len_mant_rhs - 1; i >= 0 ; i--){
+                this->mant[i] = this->mant[i] - rhs.mant[i] - overflow;
+                if (this->mant[i] < 0){
+                    this->mant[i] = 10 + this->mant[i];
+                    overflow = 1;
+                }
+                else{
+                    overflow = 0;
                 }
             }
-            else{
-                for (int i = len_mant_rhs - 1; i >= 0 ; i--){
-                    this->mant[i] = this->mant[i] - rhs.mant[i] - overflow;
-                    if (this->mant[i] < 0){
-                        this->mant[i] = 10 + this->mant[i];
-                        overflow = 1;
-                    }
-                    else{
-                        overflow = 0;
-                    }
-                }
-            }
+            
             for (int i = 1; i <= len_ord_rhs; i++){                    
                 this->ord[len_ord_this - i] = this->ord[len_ord_this - i] - rhs.ord[len_ord_rhs - i] - overflow;
                 if (this->ord[len_ord_this - i] < 0){
@@ -480,12 +403,9 @@ Decimal& Decimal::operator-=(const Decimal &rhs){
                 }
             }
             int len_zero = 0;
-            while(this->ord[len_zero] == 0){
+            while((len_ord_this > 1) and (this->ord[len_zero] == 0)){
                 this->ord.erase(this->ord.begin());
-                len_zero++;
-            }
-            if (this->ord.size() == 0){
-                this->ord.push_back(0);
+                len_ord_this--;
             }
             return *this;
         }
@@ -494,54 +414,27 @@ Decimal& Decimal::operator-=(const Decimal &rhs){
 }
 
 Decimal& ShiftLeft(Decimal &rhs, int num){
+    if (num == 0){
+        return rhs;
+    }
     int len_mant_rhs = rhs.mant.size();
     int len_ord_rhs = rhs.ord.size();
-    int len = len_mant_rhs + len_ord_rhs + num;
     if (len_mant_rhs == 0){
         for(int i = 0; i < num; i++){
             rhs.ord.push_back(0);
-            len_ord_rhs++;
         }
     }
     else{
-        if (len_ord_rhs == 1){
-            if(rhs.ord[0] == 0){
-                for(int i = 1; i < num; i++){
-                    rhs.ord.push_back(0);
-                    len_ord_rhs++;
-                }
+        for (int i = 0; i < num; ++i){
+            if (rhs.mant.size() == 0){
+                rhs.ord.push_back(0);
+            } else{
+                rhs.ord.push_back(rhs.mant.front());
+                rhs.mant.erase(rhs.mant.begin());
             }
-        }
-        else{
-            for (int i = 0; i < num; i++){
-                rhs.ord.insert(rhs.ord.begin(), 0);
-                len_ord_rhs++;
-            }
-        }
-        for (int i = 0; i < len; i++){
-            if (i + num >= len_ord_rhs){
-                if (i < len_ord_rhs){
-                    rhs.ord[i] = rhs.mant[i - len_ord_rhs + num];
-                }
-                else{
-                    rhs.mant[i - len_ord_rhs] = rhs.mant[i - len_ord_rhs + num];
-                }
-            }
-            else{
-                rhs.ord[i] = rhs.ord[i + num]; 
-            }
-        }
-        
-    }
-    for (int i = len - 1; i >= len - num; i--){
-        if (i - len_ord_rhs >= 0){
-            rhs.mant[i - len_ord_rhs] = 0;
-        }
-        else{
-            rhs.ord[i] = 0;
         }
     }
-    while(rhs.ord.size() > 1 && *rhs.ord.begin() == 0) {
+    while(rhs.ord.size() > 1 && rhs.ord.front() == 0) {
         rhs.ord.erase(rhs.ord.begin());
     }
     if (rhs.ord.size() == 0){
@@ -551,6 +444,9 @@ Decimal& ShiftLeft(Decimal &rhs, int num){
 }
 
 Decimal& ShiftRight(Decimal &rhs, int num){
+    if (num == 0){
+        return rhs;
+    }
     int len_mant_rhs = rhs.mant.size();
     int len_ord_rhs = rhs.ord.size();
     int len = len_mant_rhs + len_ord_rhs + num;
@@ -583,7 +479,7 @@ Decimal& ShiftRight(Decimal &rhs, int num){
         }
     }
     int len_zero = 0;
-    while(rhs.ord.size() > 1 && *rhs.ord.begin() == 0) {
+    while(rhs.ord.size() > 1 && rhs.ord.front() == 0) {
         rhs.ord.erase(rhs.ord.begin());
     }
     if (rhs.ord.size() == 0){
@@ -594,87 +490,45 @@ Decimal& ShiftRight(Decimal &rhs, int num){
 
 Decimal& Decimal::operator*=(const Decimal& rhs){
     Decimal sum = Decimal();
-    int overflow = 0;
-    int len_mant_this = this->mant.size();
-    int len_ord_this = this->ord.size();
-    int len_mant_rhs = rhs.mant.size();
-    int len_ord_rhs = rhs.ord.size();
+    Decimal x = Decimal();
+    x.ord = ord;
+    for (auto i : mant){
+        x.ord.push_back(i);
+    }
+    Decimal y = Decimal();
+    y.ord = rhs.ord;
+    for (auto i : rhs.mant){
+        y.ord.push_back(i);
+    }
+    std::reverse(x.ord.begin(), x.ord.end());
+    std::reverse(y.ord.begin(), y.ord.end());
+    int overflow;
+    for (int i = 0; i  < x.ord.size(); ++i){
+        overflow = 0;
+        for (int j = 0; j < y.ord.size() || overflow != 0; ++j){
+            if (i + j >= sum.ord.size()) sum.ord.push_back(0);
+            int z;
+            if (j < y.ord.size()){
+             z = sum.ord[i + j] + x.ord[i]*y.ord[j] + overflow;
+
+            } else{
+             z = sum.ord[i + j] + overflow;
+
+            }
+            sum.ord[i+j] = z % 10;
+            overflow =  z /  10;
+        }
+    }
+
+
+
+    std::reverse(sum.ord.begin(), sum.ord.end());
+    sum = ShiftRight(sum,mant.size() + rhs.mant.size());
     if (this->sign != rhs.sign){
         sum.sign = 1;
     }
-    if (len_mant_rhs != 0){
-        for (int i = len_mant_rhs - 1; i >= 0; i--){
-            Decimal tmp = Decimal();
-            if (len_mant_this != 0){
-                for(int j = len_mant_this; j >= 0; j--){
-                    tmp.mant.insert(tmp.mant.begin(), (this->mant[j] * rhs.mant[i]) + overflow);
-                    if (tmp.mant[0] > 9){
-                        overflow = tmp.mant[0] / 10;
-                        tmp.mant[0] = tmp.mant[0] % 10;
-                    }
-                    else{
-                        overflow = 0;
-                    }
-                }
-            }
-            for (int j = len_ord_this - 1; j >= 0; j--){
-                tmp.ord.insert(tmp.ord.begin(), (this->ord[j] * rhs.mant[i]) + overflow);
-                if (tmp.ord[0] > 9){
-                    overflow = tmp.ord[0] / 10;
-                    tmp.ord[0] = tmp.ord[0] % 10;
-                }
-                else{
-                    overflow = 0;
-                }
-            }
-            if (overflow > 0){
-                tmp.ord.insert(tmp.ord.begin(), overflow);
-                overflow = 0;
-            }
-            ShiftLeft(tmp, len_mant_rhs - i);
-            sum+=tmp;
-        }
-    }
-    for (int i = len_ord_rhs - 1; i >= 0; i--){
-        Decimal tmp = Decimal();
-        if (len_mant_this != 0){
-            for(int j = len_mant_this; j >= 0; j--){
-                tmp.mant.insert(tmp.mant.begin(), (this->mant[j] * rhs.ord[i]) + overflow);
-                if (tmp.mant[0] > 9){
-                    overflow = tmp.mant[0] / 10;
-                    tmp.mant[0] = tmp.mant[0] % 10;
-                }
-                else{
-                    overflow = 0;
-                }
-            }
-        }
-        for (int j = len_ord_this - 1; j >= 0; j--){
-            tmp.ord.insert(tmp.ord.begin(), (this->ord[j] * rhs.ord[i]) + overflow);
-            if (tmp.ord[0] >= 10){
-                overflow = tmp.ord[0] / 10;
-                tmp.ord[0] = tmp.ord[0] % 10;
-            }
-            else{
-                overflow = 0;
-            }
-        }
-        if (overflow > 0){
-            tmp.ord.insert(tmp.ord.begin(), overflow);
-            overflow = 0;
-        }
-        ShiftLeft(tmp, len_ord_rhs - i + len_mant_rhs + 1);
-        sum+=tmp;
-    } 
-    if (len_mant_this == 0){
-        *this = sum;
-        return *this;
-    }
-    else{
-        *this = ShiftRight(sum, len_mant_this - 2);
-        return *this;
-    }
-    
+    *this = sum;
+    return *this;
 }
 
 Decimal& Decimal::operator/=(const Decimal& rhs){
@@ -682,13 +536,26 @@ Decimal& Decimal::operator/=(const Decimal& rhs){
     int f = 0;
     int shift_second = 0;
     int shift_this = 0;
-    if (*this > rhs){
+    int size_ord = this->ord.size() - rhs.ord.size();
+    if (this->sign != rhs.sign){
         f = 1;
+        if (rhs.sign == 1){
+            second.sign = 0;
+        }
+        else{
+            this->sign = 0;
+        }
+    }
+    if (this->sign == 1){
+        this->sign = 0;
+        if (rhs.sign == 1){
+            second.sign = 0;
+        }
     }
     if (second.ord.size() == 1){
         if (second.ord[0] == 0){
             int q = 0;
-            while(second.ord[0] == 0){
+            while((second.ord[0] == 0)and (q <= 1000 )){
                 ShiftLeft(second, 1);
                 shift_second ++;
                 q++;
@@ -697,7 +564,7 @@ Decimal& Decimal::operator/=(const Decimal& rhs){
     }
     else{
         ShiftRight(second, second.ord.size() - 1);
-        shift_second ++;
+        shift_second += second.ord.size() - 1;
     }
     
     if (this->ord.size() == 1){
@@ -712,28 +579,39 @@ Decimal& Decimal::operator/=(const Decimal& rhs){
     }
     else{
         ShiftRight(*this, this->ord.size() - 1);
+        shift_this += this->ord.size() - 1;
+    }
+
+    Decimal div = Decimal();
+    if (second.ord[0] > ord[0]){
+        div.ord.push_back(0);
+        *this  = ShiftLeft(*this, 1);
         shift_this++;
+
     }
     int len = 0;
-    while(len <= 1){
-        Decimal n = Decimal();
-        n.ord.insert(n.ord.begin(), 0);
+    Decimal digit = Decimal("0");
+    Decimal zero = Decimal("0");
+    while(len <= 1000 && *this != zero){
         for (int i = 9; i >= 0; i--){
-            n.ord[0] = i;
-            if ((second * n) <= *this){
+            digit.ord[0] = i;
+            if ((second * digit) <= *this){
                 break;
             }
-            
         }
-        *this -= (second * n);
+        div.ord.push_back(digit.ord[0]);
+        *this -= (second * digit);
         ShiftLeft(*this, 1);
+
         len++;
     }
-    // if (f == 1){
-    //     ShiftRight(*this, std::abs(shift_this - shift_second));
-    // }else{
-    //     ShiftLeft(*this, std::abs(shift_this - shift_second));
-    // }
+    
+    if (f == 1){
+        div.sign = 1;
+    }
+    ShiftRight(div, shift_this - shift_second - 1 + len - size_ord);
+    
+    *this = div;
     return *this;
 
 }
@@ -818,9 +696,9 @@ bool operator<(const Decimal& lhs, const Decimal& rhs){
                 int len_mant = std::min(lhs.mant.size(), rhs.mant.size());
                 for (int i = 0; i < len_mant; i++){
                     if (lhs.mant[i] < rhs.mant[i]){
-                        return true;
+                       return true;
                     }
-                    else if (lhs.ord[i] > rhs.ord[i]){
+                    else if (lhs.mant[i] > rhs.mant[i]){
                         return false;
                     }
                 }
@@ -853,18 +731,18 @@ bool operator<(const Decimal& lhs, const Decimal& rhs){
                 }
                 int len_mant = std::min(lhs.mant.size(), rhs.mant.size());
                 for (int i = 0; i < len_mant; i++){
-                    if (lhs.mant[i] < rhs.mant[i]){
+                    if (lhs.mant[i] > rhs.mant[i]){
+                       return true;
+                    }
+                    else if (lhs.mant[i] < rhs.mant[i]){
                         return false;
                     }
-                    else if(lhs.mant[i] > rhs.mant[i]){
-                        return true;
-                    }
                 }
-                if (lhs.mant.size() < rhs.mant.size()){
-                    return false;
+                if (lhs.mant.size() > rhs.mant.size()){
+                    return true;
                 }
                 else {
-                    return true;                    
+                    return false;
                 }
                 
             }
@@ -951,11 +829,15 @@ Decimal FunctionPi(int precision){
     Decimal divider = Decimal("8");
     Decimal dividerx = Decimal("1");
     Decimal sixteen = Decimal ("16");
-    for (int i = 0; i < precision; i++){
-        Decimal idiv = Decimal(std::to_string(i));
-        idiv *=divider;
+    for (int i = 1; i <= precision; i++){
+        std::string k = std::to_string(i);
+        std::cout<< "this";
+        Decimal idiv = Decimal(k);
+        idiv *= divider;
         dividerx *= sixteen;
-        pi += (((four / (idiv + first)) - (second / (idiv + four)) - (first / (idiv + five)) - (first / idiv+ six))/ dividerx);
+        std::cout << pi;
+        pi += (((four / (idiv + first)) - (second / (idiv + four)) - (first / (idiv + five)) - (first / idiv + six))/ dividerx);
+        
     }
     return pi;
 }
