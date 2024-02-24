@@ -16,8 +16,8 @@ class Decimal {
         Decimal& operator-=(const Decimal& rhs);
         Decimal& operator*=(const Decimal& rhs);
         Decimal& operator/=(const Decimal& rhs);
-        Decimal& operator=(const Decimal& rhs);
-        ~Decimal();
+        // Decimal& operator=(const Decimal& rhs);
+        // ~Decimal();
         
         
 };
@@ -27,7 +27,7 @@ Decimal& operator~(Decimal& lhs);
 Decimal operator+ (const Decimal& lhs, const Decimal& rhs);
 Decimal operator- (const Decimal& lhs, const Decimal& rhs);
 Decimal operator* (const Decimal& lhs, const Decimal& rhs);
-// Decimal operator/ (const Decimal lhs, const Decimal& rhs);
+Decimal operator/ (const Decimal& lhs, const Decimal& rhs);
 
 bool operator==(const Decimal& lhs, const Decimal& rhs);
 bool operator!=(const Decimal& lhs, const Decimal& rhs);
