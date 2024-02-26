@@ -11,10 +11,10 @@ Decimal::Decimal(std::string str){
     this->sign = num.sign;
 }
 
-// Decimal:: ~Decimal(){
-//     this->mant.clear();
-//     this->ord.clear();
-// }
+Decimal:: ~Decimal(){
+    this->mant.clear();
+    this->ord.clear();
+}
 
 Decimal Decimal::StrToDec(const std::string &num) {
     int i = 0;
@@ -71,15 +71,15 @@ std::string Decimal::DecToStr(const Decimal &num){
     return number;
 }
 
-// Decimal& Decimal::operator=(const Decimal &rhs) {
-//     mant = rhs.mant;
-//     ord = rhs.ord;
-//     sign = rhs.sign;
-//     return *this;
-// }
+Decimal& Decimal::operator=(const Decimal &rhs) {
+    mant = rhs.mant;
+    ord = rhs.ord;
+    sign = rhs.sign;
+    return *this;
+}
 
 Decimal operator+(const Decimal& lhs, const Decimal& rhs){
-    Decimal SumDec = lhs;
+    Decimal SumDec (lhs);
     SumDec += rhs;
     return SumDec;
 } 
@@ -492,13 +492,18 @@ Decimal& Decimal::operator*=(const Decimal& rhs){
     Decimal sum = Decimal();
     Decimal x = Decimal();
     x.ord = ord;
-    for (auto i : mant){
-        x.ord.push_back(i);
+    if (mant.size() != 0){
+        for (auto i : mant){
+            x.ord.push_back(i);
+        }
     }
+    
     Decimal y = Decimal();
     y.ord = rhs.ord;
-    for (auto i : rhs.mant){
-        y.ord.push_back(i);
+    if (rhs.mant.size() != 0){
+        for (auto i : rhs.mant){
+            y.ord.push_back(i);
+        }
     }
     std::reverse(x.ord.begin(), x.ord.end());
     std::reverse(y.ord.begin(), y.ord.end());
@@ -592,7 +597,7 @@ Decimal& Decimal::operator/=(const Decimal& rhs){
     int len = 0;
     Decimal digit = Decimal("0");
     Decimal zero = Decimal("0");
-    while(len <= 1000 && *this != zero){
+    while(len <= 20 && *this != zero){
         for (int i = 9; i >= 0; i--){
             digit.ord[0] = i;
             if ((second * digit) <= *this){
@@ -815,6 +820,10 @@ std::istream& operator>>(std::istream& is, std::string obj) {
         }
     }
     return is;
+}
+
+Decimal operator""_dc(const char *s){
+    return Decimal(s);
 }
 
 
