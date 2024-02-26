@@ -16,8 +16,8 @@ class Decimal {
         Decimal& operator-=(const Decimal& rhs);
         Decimal& operator*=(const Decimal& rhs);
         Decimal& operator/=(const Decimal& rhs);
-        // Decimal& operator=(const Decimal& rhs);
-        // ~Decimal();
+        Decimal& operator=(const Decimal& rhs);
+        ~Decimal();
         
         
 };
@@ -38,6 +38,9 @@ bool operator>=(const Decimal& lhs, const Decimal& rhs);
 
 Decimal FunctionPi(int precision);
 
+
 std::ostream& operator<<(std::ostream& os, const Decimal& obj);
 std::istream& operator>>(std::istream& is, std::string obj);
+
+Decimal operator""_dc(const char *);
 #endif 
